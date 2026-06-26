@@ -26,32 +26,35 @@ extension Memory {
     /// ## The lifecycle split
     ///
     /// `Memory.Small` owns the LOCATION, the discriminant, and the spill-DECISION (when to move
-    /// from inline to heap — see `create`). `Storage.Contiguous` (which has the count) owns MOVING
-    /// the live elements on spill — identical to how `Memory.Heap` growth splits (the leaf provides
-    /// the region; the discipline moves elements).
+    /// from inline to heap — the `Memory.Growable` `init(byteCount:alignment:)` IS that decision).
+    /// `Storage.Contiguous` (which has the count) owns MOVING the live elements on spill — identical
+    /// to how `Memory.Heap` growth splits (the leaf provides the region; the discipline moves elements).
     ///
     /// ## Representation
     ///
     /// A `~Copyable` discriminated union — never a two-field struct: mixing the `@_rawLayout`
     /// inline arm with the heap arm's class reference in one struct trips an LLVM release verifier
-    /// crash ("Instruction does not dominate all uses!"); the enum destroys exactly one arm.
+    /// crash ("Instruction does not dominate all uses!"); the enum destroys exactly one arm. Both arms
+    /// are **element-free** raw regions (the typed element + initialization ledger lift to
+    /// `Storage.Contiguous`, never on the raw region):
     ///
-    /// - `inline`: `Memory.Inline<Element, inlineCapacity>` — the `@_rawLayout` + ledger inline leaf.
-    /// - `heap`: `Memory.Heap<Element>` — the class-backed leaf, reused as the spill target.
+    /// - `inline`: `Memory.Inline<inlineCapacity>` — the `@_rawLayout` inline raw-byte leaf.
+    /// - `heap`: `Memory.Heap` — the out-of-line raw-byte leaf, reused as the spill target.
     ///
     /// ## Copyability
     ///
     /// Unconditionally `~Copyable` (the `@_rawLayout` inline arm is unconditionally `~Copyable`).
-    public struct Small<Element: ~Copyable, let inlineCapacity: Int>: ~Copyable {
-        /// The active storage arm. The enum (not a two-field struct) is
-        /// release-correctness-load-bearing — see the type doc.
+    public struct Small<let inlineCapacity: Int>: ~Copyable {
+        /// The active storage arm.
+        ///
+        /// The enum (not a two-field struct) is release-correctness-load-bearing — see the type doc.
         @frozen
         @usableFromInline
         enum _Representation: ~Copyable {
-            /// Inline arm: the `@_rawLayout` + `Store.Initialization`-ledger inline leaf.
-            case inline(Memory.Inline<Element, inlineCapacity>)
-            /// Heap arm: the class-backed `Memory.Heap` leaf (the spill target).
-            case heap(Memory.Heap<Element>)
+            /// Inline arm: the `@_rawLayout` inline raw-byte leaf (element-free).
+            case inline(Memory.Inline<inlineCapacity>)
+            /// Heap arm: the out-of-line `Memory.Heap` raw-byte leaf (the spill target).
+            case heap(Memory.Heap)
         }
 
         @usableFromInline
@@ -60,7 +63,9 @@ extension Memory {
         /// Creates empty inline storage.
         @inlinable
         public init() {
-            _storage = .inline(Memory.Inline<Element, inlineCapacity>())
+            _storage = .inline(Memory.Inline<inlineCapacity>())
         }
     }
 }
+
+extension Memory.Small: Sendable {}

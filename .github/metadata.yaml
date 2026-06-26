@@ -1,0 +1,9 @@
+# .github/metadata.yaml
+description: "Hybrid inline⊕heap memory leaf: inline storage that spills to the heap when its inline budget is exceeded."
+topics:
+  - primitives
+  - memory
+  - allocation
+homepage: "https://swift-institute.org"
+readme:
+  family: E
