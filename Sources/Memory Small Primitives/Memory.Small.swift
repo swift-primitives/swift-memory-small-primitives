@@ -14,13 +14,13 @@ public import Memory_Inline_Primitives
 public import Memory_Primitive
 
 extension Memory {
-    /// Hybrid inline⊕heap memory leaf — stores up to `inlineCapacity` elements inline (no
-    /// allocation) and spills to a heap allocation when that capacity is exceeded.
+    /// Hybrid inline⊕heap memory leaf — stores up to `inlineCapacity` bytes inline (no
+    /// allocation) and spills to a heap allocation when that byte budget is exceeded.
     ///
-    /// `Memory.Small<Element, inlineCapacity>` is the third allocation-strategy leaf of the
+    /// `Memory.Small<let inlineCapacity: Int>` is the third allocation-strategy leaf of the
     /// substitution tower (with ``Memory/Heap`` and ``Memory/Inline``). **"Small" is a MEMORY
     /// concern**: the topology stays contiguous whether inline or spilled — only the byte
-    /// LOCATION switches inline⊕heap. It composes the two leaves; `Storage.Contiguous<Memory.Small<E,n>>`
+    /// LOCATION switches inline⊕heap. It composes the two leaves; `Storage.Contiguous<Memory.Small<n>>`
     /// is the dense discipline the buffers compose — replacing the dissolved `Storage.Small`.
     ///
     /// ## The lifecycle split
