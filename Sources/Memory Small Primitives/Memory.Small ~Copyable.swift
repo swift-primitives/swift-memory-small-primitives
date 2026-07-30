@@ -17,7 +17,7 @@ extension Memory.Small {
     /// The full-reassignment seat (`self = Self(_storage:)`) is how `~Copyable` enum payloads are
     /// mutated in place — destructure via `case .arm(var x)`, operate, then reassign `self`.
     @inlinable
-    init(_storage: consuming _Representation) {
+    package init(_storage: consuming _Representation) {
         self._storage = _storage
     }
 

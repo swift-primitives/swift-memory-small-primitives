@@ -50,7 +50,7 @@ extension Memory {
         /// The enum (not a two-field struct) is release-correctness-load-bearing — see the type doc.
         @frozen
         @usableFromInline
-        enum _Representation: ~Copyable {
+        package enum _Representation: ~Copyable {
             /// Inline arm: the `@_rawLayout` inline raw-byte leaf (element-free).
             case inline(Memory.Inline<inlineCapacity>)
             /// Heap arm: the out-of-line `Memory.Heap` raw-byte leaf (the spill target).
