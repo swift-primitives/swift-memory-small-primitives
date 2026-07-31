@@ -45,18 +45,6 @@ extension Memory {
     ///
     /// Unconditionally `~Copyable` (the `@_rawLayout` inline arm is unconditionally `~Copyable`).
     public struct Small<let inlineCapacity: Int>: ~Copyable {
-        /// The active storage arm.
-        ///
-        /// The enum (not a two-field struct) is release-correctness-load-bearing — see the type doc.
-        @frozen
-        @usableFromInline
-        package enum _Representation: ~Copyable {
-            /// Inline arm: the `@_rawLayout` inline raw-byte leaf (element-free).
-            case inline(Memory.Inline<inlineCapacity>)
-            /// Heap arm: the out-of-line `Memory.Heap` raw-byte leaf (the spill target).
-            case heap(Memory.Heap)
-        }
-
         @usableFromInline
         var _storage: _Representation
 
@@ -65,6 +53,20 @@ extension Memory {
         public init() {
             _storage = .inline(Memory.Inline<inlineCapacity>())
         }
+    }
+}
+
+extension Memory.Small {
+    /// The active storage arm.
+    ///
+    /// The enum (not a two-field struct) is release-correctness-load-bearing — see the type doc.
+    @frozen
+    @usableFromInline
+    package enum _Representation: ~Copyable {
+        /// Inline arm: the `@_rawLayout` inline raw-byte leaf (element-free).
+        case inline(Memory.Inline<inlineCapacity>)
+        /// Heap arm: the out-of-line `Memory.Heap` raw-byte leaf (the spill target).
+        case heap(Memory.Heap)
     }
 }
 
